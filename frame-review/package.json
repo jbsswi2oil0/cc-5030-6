@@ -1,0 +1,22 @@
+{
+  "name": "frame-review",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Frame-accurate two-user video review tool with content-bound annotations",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server/index.js",
+    "gen-media": "node tools/generate-media.js",
+    "test": "playwright test --config=test/playwright.config.js",
+    "test:unit": "node test/unit.js"
+  },
+  "dependencies": {
+    "@ffprobe-installer/ffprobe": "^2.1.2",
+    "ffmpeg-static": "^5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "pngjs": "^7.0.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0"
+  }
+}

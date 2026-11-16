@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>逐帧审阅 · Frame Review</title>
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<header>
+  <h1>影视逐帧审阅</h1>
+  <div class="header-controls">
+    <label>审阅者
+      <input id="authorInput" value="reviewer-A" maxlength="40">
+    </label>
+    <label>素材
+      <select id="mediaSelect"></select>
+    </label>
+    <form id="uploadForm" class="upload-form">
+      <input type="file" id="fileInput" accept="video/*">
+      <button type="submit">上传片段</button>
+    </form>
+  </div>
+</header>
+
+<main>
+  <section class="stage-col">
+    <div id="metaBox" class="meta-box">尚未加载素材</div>
+
+    <div id="stage" class="stage">
+      <video id="video" playsinline preload="auto"></video>
+      <canvas id="overlay"></canvas>
+      <div id="waitOverlay" class="wait-overlay">
+        <div class="wait-card">
+          <div class="spinner"></div>
+          <div id="waitText">等待中…</div>
+          <div class="wait-sub">此状态下画面标注被锁定，旧帧不会被当作目标帧</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="transport">
+      <button id="btnPrev">◀ 上一帧</button>
+      <button id="btnPlay">播放/暂停</button>
+      <button id="btnNext">下一帧 ▶</button>
+      <label>跳帧
+        <input id="frameInput" type="number" min="0" value="0" style="width:90px">
+      </label>
+      <button id="btnGo">跳转</button>
+      <span id="seekState" class="state-badge">未加载</span>
+    </div>
+
+    <div id="frameInfo" class="frame-info">—</div>
+
+    <div class="note-box">
+      <label>轨道
+        <select id="trackSelect"></select>
+      </label>
+      <textarea id="noteText" rows="2" placeholder="在画面上拖拽框选区域后自动带区域提交；也可先写技术注释"></textarea>
+      <div class="hint">在画面上拖拽 = 在<b>素材坐标</b>上框选（已反算缩放/旋转/留黑边）</div>
+    </div>
+  </section>
+
+  <aside class="side-col">
+    <div class="side-head">
+      <h2>注释 <span id="annCount"></span></h2>
+      <label>筛选
+        <select id="filterSelect"></select>
+      </label>
+    </div>
+    <div id="annotationList" class="annotation-list"></div>
+  </aside>
+</main>
+
+<div id="flash" class="flash"></div>
+
+<script src="/shared/geometry.js"></script>
+<script src="/shared/frame-engine.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>

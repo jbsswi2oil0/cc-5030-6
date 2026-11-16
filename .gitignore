@@ -23,3 +23,6 @@ __pycache__/
 *.log
 .env
 .env.*
+
+# Frame review atomic database writes
+/frame-review/data/db.json.tmp
