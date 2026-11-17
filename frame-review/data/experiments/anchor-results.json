@@ -1,0 +1,714 @@
+{
+  "source": {
+    "file": "data/samples/cfr-frame-numbers.mp4",
+    "frameCount": 60,
+    "signature": "luma-grid-16",
+    "threshold": 2.5,
+    "thresholdEvidence": "tools/experiment-anchors.js (re-encoded own<=1.48, wrong>=2.96; cut own<=0.44, wrong>=3.15; repeat own<=0.54, wrong>=3.11)",
+    "intraSourceMinDistance": 3.2210246816812815,
+    "intraSourceMinPair": [
+      10,
+      18
+    ]
+  },
+  "probes": [
+    0,
+    1,
+    7,
+    15,
+    22,
+    30,
+    31,
+    44,
+    59
+  ],
+  "targets": {
+    "reencode": {
+      "signatureDrift": {
+        "count": 60,
+        "min": 0.8385254915624212,
+        "median": 1.0193441518937556,
+        "max": 1.4842927608797396
+      },
+      "absentProbes": [],
+      "kind": "reencode",
+      "probeCount": 9,
+      "timeAnchor": {
+        "reliableHits": 9,
+        "unreliableHits": 0,
+        "maxErrorFrames": 0,
+        "errorsFrames": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ]
+      },
+      "contentAnchor": {
+        "resolved": 9,
+        "ambiguous": 0,
+        "notFound": 0,
+        "maxErrorFrames": 0,
+        "errorsFrames": [
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ambiguityMin": 1,
+        "ambiguityMax": 1,
+        "ambiguities": [
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "rows": [
+        {
+          "probeFrame": 0,
+          "expectedTargetFrames": [
+            0
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 0,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 0,
+            "distance": 1.0771054962258804,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 1,
+          "expectedTargetFrames": [
+            1
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 1,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 1,
+            "distance": 1.1675963557668378,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 7,
+          "expectedTargetFrames": [
+            7
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 7,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 7,
+            "distance": 1.1726039399558574,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 15,
+          "expectedTargetFrames": [
+            15
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 15,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 15,
+            "distance": 1.0716517624676405,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 22,
+          "expectedTargetFrames": [
+            22
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 22,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 22,
+            "distance": 0.899218410621135,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 30,
+          "expectedTargetFrames": [
+            30
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 30,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 30,
+            "distance": 1.0458250331675945,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 31,
+          "expectedTargetFrames": [
+            31
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 31,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 31,
+            "distance": 1.0495534764841665,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 44,
+          "expectedTargetFrames": [
+            44
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 44,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 44,
+            "distance": 1.034559084827928,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 59,
+          "expectedTargetFrames": [
+            59
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": true,
+            "frameIndex": 59,
+            "errorFrames": 0,
+            "timelinePreserved": true
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 59,
+            "distance": 1.118033988749895,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        }
+      ]
+    },
+    "cut": {
+      "signatureDrift": {
+        "count": 30,
+        "min": 0.3125,
+        "median": 0.3644344934278313,
+        "max": 0.4330127018922193
+      },
+      "absentProbes": [
+        {
+          "probeFrame": 0,
+          "status": "not-found",
+          "candidateCount": 0,
+          "frameIndex": null,
+          "distance": null
+        },
+        {
+          "probeFrame": 1,
+          "status": "not-found",
+          "candidateCount": 0,
+          "frameIndex": null,
+          "distance": null
+        },
+        {
+          "probeFrame": 7,
+          "status": "not-found",
+          "candidateCount": 0,
+          "frameIndex": null,
+          "distance": null
+        },
+        {
+          "probeFrame": 59,
+          "status": "not-found",
+          "candidateCount": 0,
+          "frameIndex": null,
+          "distance": null
+        }
+      ],
+      "kind": "cut",
+      "probeCount": 5,
+      "timeAnchor": {
+        "reliableHits": 0,
+        "unreliableHits": 5,
+        "maxErrorFrames": null,
+        "errorsFrames": []
+      },
+      "contentAnchor": {
+        "resolved": 5,
+        "ambiguous": 0,
+        "notFound": 0,
+        "maxErrorFrames": 0,
+        "errorsFrames": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "ambiguityMin": 1,
+        "ambiguityMax": 1,
+        "ambiguities": [
+          1,
+          1,
+          1,
+          1,
+          1
+        ]
+      },
+      "rows": [
+        {
+          "probeFrame": 15,
+          "expectedTargetFrames": [
+            0
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 15,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 0,
+            "distance": 0.3535533905932738,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 22,
+          "expectedTargetFrames": [
+            7
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 22,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 7,
+            "distance": 0.3590351654086268,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 30,
+          "expectedTargetFrames": [
+            15
+          ],
+          "time": {
+            "method": "relative-time-nearest",
+            "reliable": false,
+            "frameIndex": 29,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 15,
+            "distance": 0.4330127018922193,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 31,
+          "expectedTargetFrames": [
+            16
+          ],
+          "time": {
+            "method": "relative-time-nearest",
+            "reliable": false,
+            "frameIndex": 29,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 16,
+            "distance": 0.385275875185561,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        },
+        {
+          "probeFrame": 44,
+          "expectedTargetFrames": [
+            29
+          ],
+          "time": {
+            "method": "relative-time-nearest",
+            "reliable": false,
+            "frameIndex": 29,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "resolved",
+            "candidateCount": 1,
+            "ambiguity": 1,
+            "frameIndex": 29,
+            "distance": 0.3644344934278313,
+            "threshold": 2.5,
+            "errorFrames": 0
+          }
+        }
+      ]
+    },
+    "repeat": {
+      "signatureDrift": {
+        "count": 120,
+        "min": 0.30618621784789724,
+        "median": 0.39528470752104744,
+        "max": 0.5376453291901642
+      },
+      "absentProbes": [],
+      "kind": "repeat",
+      "probeCount": 9,
+      "timeAnchor": {
+        "reliableHits": 0,
+        "unreliableHits": 9,
+        "maxErrorFrames": null,
+        "errorsFrames": []
+      },
+      "contentAnchor": {
+        "resolved": 0,
+        "ambiguous": 9,
+        "notFound": 0,
+        "maxErrorFrames": null,
+        "errorsFrames": [],
+        "ambiguityMin": 2,
+        "ambiguityMax": 2,
+        "ambiguities": [
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2,
+          2
+        ]
+      },
+      "rows": [
+        {
+          "probeFrame": 0,
+          "expectedTargetFrames": [
+            0,
+            60
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 0,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 60,
+            "distance": 0.3590351654086268,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 1,
+          "expectedTargetFrames": [
+            1,
+            61
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 1,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 61,
+            "distance": 0.3590351654086268,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 7,
+          "expectedTargetFrames": [
+            7,
+            67
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 7,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 67,
+            "distance": 0.3423265984407288,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 15,
+          "expectedTargetFrames": [
+            15,
+            75
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 15,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 75,
+            "distance": 0.3365728004459065,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 22,
+          "expectedTargetFrames": [
+            22,
+            82
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 22,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 82,
+            "distance": 0.3801726581436387,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 30,
+          "expectedTargetFrames": [
+            30,
+            90
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 30,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 90,
+            "distance": 0.42389562394532926,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 31,
+          "expectedTargetFrames": [
+            31,
+            91
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 31,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 91,
+            "distance": 0.4050462936504913,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 44,
+          "expectedTargetFrames": [
+            44,
+            104
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 44,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 104,
+            "distance": 0.3801726581436387,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        },
+        {
+          "probeFrame": 59,
+          "expectedTargetFrames": [
+            59,
+            119
+          ],
+          "time": {
+            "method": "exact-pts",
+            "reliable": false,
+            "frameIndex": 59,
+            "errorFrames": null,
+            "timelinePreserved": false
+          },
+          "content": {
+            "status": "ambiguous",
+            "candidateCount": 2,
+            "ambiguity": 2,
+            "frameIndex": 119,
+            "distance": 0.39528470752104744,
+            "threshold": 2.5,
+            "errorFrames": null
+          }
+        }
+      ]
+    }
+  },
+  "checks": {
+    "problems": [],
+    "ok": true
+  }
+}

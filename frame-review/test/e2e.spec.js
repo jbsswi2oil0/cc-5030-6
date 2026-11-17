@@ -286,8 +286,10 @@ test.describe('内容身份与同名重复上传', () => {
     const anns = await H.annotationsFor(page, id);
     expect(anns).toHaveLength(1);
     expect(anns[0].sourceVersionId).toBe(media.versions[0].versionId);
-    expect(await page.locator('.ann-version').first()).toContainText('来源版本：' + anns[0].sourceVersionId);
-    expect(await page.locator('.ann-version').first()).toContainText(unique);
+    // assert on the locator directly (auto-retrying); awaiting a handle first
+    // can pin a node that the 2s annotation poll then replaces.
+    await expect(page.locator('.ann-version').first()).toContainText('来源版本：' + anns[0].sourceVersionId);
+    await expect(page.locator('.ann-version').first()).toContainText(unique);
   });
 });
 

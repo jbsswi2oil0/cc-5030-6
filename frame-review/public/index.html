@@ -52,11 +52,39 @@
 
     <div id="frameInfo" class="frame-info">—</div>
 
+    <div class="anchor-panel">
+      <div class="anchor-head">
+        <h2>注释锚点定位</h2>
+        <span id="anchorTarget" class="anchor-target"></span>
+      </div>
+      <div class="anchor-grid">
+        <div id="timeAnchorCard" class="anchor-card">
+          <div class="anchor-title">媒体时间区间锚点</div>
+          <div class="anchor-body">选择一条注释后显示定位结果</div>
+        </div>
+        <div id="contentAnchorCard" class="anchor-card">
+          <div class="anchor-title">帧内容签名锚点</div>
+          <div class="anchor-body">选择一条注释后显示定位结果</div>
+        </div>
+      </div>
+      <div class="anchor-compare">
+        <label>对照目标素材
+          <select id="anchorTargetSelect"></select>
+        </label>
+        <button id="btnCompare" disabled>用两种锚点重新定位</button>
+        <span id="anchorCompareState" class="anchor-state"></span>
+      </div>
+    </div>
+
     <div class="note-box">
       <label>轨道
         <select id="trackSelect"></select>
       </label>
       <textarea id="noteText" rows="2" placeholder="在画面上拖拽框选区域后自动带区域提交；也可先写技术注释"></textarea>
+      <div class="note-actions">
+        <button id="btnSaveEdit" hidden>保存注释编辑</button>
+        <button id="btnCancelEdit" hidden>取消编辑</button>
+      </div>
       <div class="hint">在画面上拖拽 = 在<b>素材坐标</b>上框选（已反算缩放/旋转/留黑边）</div>
     </div>
   </section>

@@ -5,6 +5,8 @@ const assert = require('assert');
 const path = require('path');
 const G = require('../public/shared/geometry.js');
 const { probeMedia, frameIndexAtTime, resolveFrame } = require('../server/probe');
+const { extractSignatures, lumaDistanceHex } = require('../server/signature');
+const { buildTimeAnchor, buildContentAnchor, locateByTime, locateByContent } = require('../server/anchors');
 
 let passed = 0;
 function test(name, fn) {
@@ -149,6 +151,121 @@ test('resolveFrame finds exact PTS match then nearest within half step', () => {
   assert.strictEqual(resolveFrame(t, 99, t.frames[25].ptsTime), 25);
   // pts far outside the timeline cannot be resolved
   assert.strictEqual(resolveFrame(t, 0, 999), null);
+});
+
+console.log('signature: content fingerprint');
+test('signature extraction returns one 16x16 luma entry per decoded frame', () => {
+  const t = probeMedia(path.join(samples, 'cfr-frame-numbers.mp4'));
+  const sig = extractSignatures(path.join(samples, 'cfr-frame-numbers.mp4'));
+  assert.strictEqual(sig.kind, 'luma-grid-16');
+  assert.strictEqual(sig.frames.length, t.frameCount);
+  assert.strictEqual(sig.frames[0].hex.length, 16 * 16 * 2);
+});
+
+test('a clean re-encode stays within the calibrated distance threshold', () => {
+  const src = extractSignatures(path.join(samples, 'cfr-frame-numbers.mp4'));
+  const dst = extractSignatures(path.join(samples, 'cfr-frame-numbers.mp4'));
+  const d = lumaDistanceHex(src.frames[10].hex, dst.frames[10].hex);
+  assert.strictEqual(d, 0);
+});
+
+console.log('anchors: time locator');
+test('time anchor hits the exact PTS frame with zero error on an identical timeline', () => {
+  const media = { frameTable: probeMedia(path.join(samples, 'cfr-frame-numbers.mp4')) };
+  const anchor = buildTimeAnchor(media, 25);
+  const hit = locateByTime(anchor, media.frameTable);
+  assert.strictEqual(hit.method, 'exact-pts');
+  assert.strictEqual(hit.frameIndex, 25);
+  assert.strictEqual(hit.reliable, true);
+  assert.strictEqual(hit.timelinePreserved, true);
+});
+
+test('time anchor refuses to call a re-based cut timeline reliable', () => {
+  const vfr = probeMedia(path.join(samples, 'vfr-irregular.mp4'));
+  const media = { frameTable: probeMedia(path.join(samples, 'cfr-frame-numbers.mp4')) };
+  const anchor = buildTimeAnchor(media, 25);
+  const hit = locateByTime(anchor, vfr);
+  assert.strictEqual(hit.reliable, false);
+  assert.strictEqual(hit.timelinePreserved, false);
+});
+
+console.log('anchors: content locator');
+test('content anchor without a threshold is rejected, never defaulted', () => {
+  const table = extractSignatures(path.join(samples, 'cfr-frame-numbers.mp4'));
+  const media = {
+    frameTable: probeMedia(path.join(samples, 'cfr-frame-numbers.mp4')),
+    signatureTable: table
+  };
+  assert.throws(() => buildContentAnchor(media, 10, { threshold: 0 }), /positive threshold/);
+  assert.throws(() => buildContentAnchor(media, 10, { threshold: NaN }), /positive threshold/);
+});
+
+test('content locator reports a unique candidate with its threshold', () => {
+  const file = path.join(samples, 'cfr-frame-numbers.mp4');
+  const media = { frameTable: probeMedia(file), signatureTable: extractSignatures(file) };
+  const anchor = buildContentAnchor(media, 22);
+  const hit = locateByContent(anchor, media.signatureTable);
+  assert.strictEqual(hit.status, 'resolved');
+  assert.strictEqual(hit.candidateCount, 1);
+  assert.strictEqual(hit.frameIndex, 22);
+  assert.strictEqual(hit.threshold, anchor.threshold);
+});
+
+test('content locator surfaces ambiguity instead of picking one duplicate', () => {
+  // A synthetic table where the same signature appears at frames 5 and 40.
+  const hex = '00'.repeat(256);
+  const table = {
+    kind: 'luma-grid-16',
+    grid: 16,
+    frames: [
+      { index: 0, hex: '11'.repeat(256) },
+      { index: 5, hex },
+      { index: 40, hex }
+    ]
+  };
+  const anchor = {
+    kind: 'content-signature',
+    frameIndex: 5,
+    algorithm: 'luma-grid-16',
+    grid: 16,
+    signature: hex,
+    threshold: 1
+  };
+  const hit = locateByContent(anchor, table);
+  assert.strictEqual(hit.status, 'ambiguous');
+  assert.strictEqual(hit.ambiguity, 2);
+  assert.deepStrictEqual(hit.candidates.map((c) => c.frameIndex), [5, 40]);
+});
+
+test('content locator reports not-found outside the threshold', () => {
+  const table = {
+    kind: 'luma-grid-16',
+    grid: 16,
+    frames: [{ index: 0, hex: '00'.repeat(256) }, { index: 1, hex: 'ff'.repeat(256) }]
+  };
+  const anchor = {
+    kind: 'content-signature',
+    frameIndex: 0,
+    algorithm: 'luma-grid-16',
+    grid: 16,
+    signature: '0f'.repeat(256),
+    threshold: 0.5
+  };
+  assert.strictEqual(locateByContent(anchor, table).status, 'not-found');
+  assert.strictEqual(locateByContent(anchor, table).ambiguity, 0);
+});
+
+test('content locator rejects a signature grid mismatch', () => {
+  const table = { kind: 'luma-grid-8', grid: 8, frames: [] };
+  const anchor = {
+    kind: 'content-signature',
+    frameIndex: 0,
+    algorithm: 'luma-grid-16',
+    grid: 16,
+    signature: '00'.repeat(256),
+    threshold: 1
+  };
+  assert.throws(() => locateByContent(anchor, table), /algorithm mismatch/);
 });
 
 console.log(`\n${passed} unit assertions passed`);

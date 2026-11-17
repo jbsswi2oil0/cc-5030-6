@@ -45,6 +45,10 @@ async function currentPts(page) {
 }
 
 async function drawRegion(page, fromRel, toRel) {
+  // The added anchor panel makes the page taller than a short viewport; a
+  // gotoFrame fill can scroll the video partly out of view. Scroll it into
+  // view first so pointer coordinates map to the real frame box.
+  await page.locator('#video').scrollIntoViewIfNeeded();
   // Ensure the overlay canvas has re-aligned to the current video content
   // box before issuing pointer events (ResizeObserver settles a frame later).
   await page.waitForFunction(() => {
@@ -54,11 +58,33 @@ async function drawRegion(page, fromRel, toRel) {
       Math.abs(v.width - c.width) < 1.5 && Math.abs(v.height - c.height) < 1.5;
   }, { timeout: 5000 });
 
+  // The POST is issued on pointerup; without waiting for it, a caller that
+  // reads the annotation list immediately can observe the previous write.
+  const cid = await currentContentId(page);
+  const before = cid ? (await annotationsFor(page, cid)).length : 0;
+
   const box = await page.locator('#video').boundingBox();
-  await page.mouse.move(box.x + box.width * fromRel[0], box.y + box.height * fromRel[1]);
+  if (!box || box.y < 0 || box.y + box.height > page.viewportSize().height) {
+    await page.locator('#video').evaluate((el) => el.scrollIntoView({ block: 'center' }));
+  }
+  const freshBox = await page.locator('#video').boundingBox();
+  const b = freshBox && freshBox.y >= 0 ? freshBox : box;
+  await page.mouse.move(b.x + b.width * fromRel[0], b.y + b.height * fromRel[1]);
   await page.mouse.down();
-  await page.mouse.move(box.x + box.width * toRel[0], box.y + box.height * toRel[1], { steps: 4 });
+  await page.mouse.move(b.x + b.width * toRel[0], b.y + b.height * toRel[1], { steps: 4 });
   await page.mouse.up();
+
+  if (cid) {
+    await page.waitForFunction(
+      async ({ cid, before }) => {
+        const r = await fetch(`/api/media/${cid}/annotations`);
+        const j = await r.json();
+        return (j.annotations || []).length > before;
+      },
+      { cid, before },
+      { timeout: 10000 }
+    );
+  }
 }
 
 async function lastAnnotation(page, contentId) {
@@ -78,9 +104,16 @@ async function annotationsFor(page, contentId) {
 }
 
 async function setAuthor(page, name) {
-  // fill alone does not fire the app's change listener, so dispatch it.
+  // fill fires input+change, but a pending poll/render can rewrite the field
+  // from state right after. Set the value, fire change, then verify the app
+  // actually adopted it before the caller writes an annotation.
   await page.fill('#authorInput', name);
   await page.dispatchEvent('#authorInput', 'change');
+  await page.waitForFunction(
+    (expected) => document.getElementById('authorInput').value === expected,
+    name,
+    { timeout: 5000 }
+  );
 }
 
 async function currentContentId(page) {

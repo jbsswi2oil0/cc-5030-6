@@ -163,12 +163,21 @@ const server = http.createServer(async (req, res) => {
         if (req.method === 'GET' && parts[3] === 'file') {
           return serveMediaFile(req, res, media);
         }
-        if (req.method === 'GET' && parts[3] === 'annotations') {
+        if (req.method === 'GET' && parts[3] === 'annotations' && parts.length === 4) {
           return sendJson(res, 200, { annotations: store.listAnnotations(parts[2]) });
         }
-        if (req.method === 'POST' && parts[3] === 'annotations') {
+        if (req.method === 'GET' && parts[3] === 'annotations' && parts.length === 5) {
+          const target = url.searchParams.get('target') || parts[2];
+          return sendJson(res, 200, store.locateAnnotation(parts[2], parts[4], target));
+        }
+        if (req.method === 'POST' && parts[3] === 'annotations' && parts.length === 4) {
           const body = await readJsonBody(req);
           const annotation = store.addAnnotation(parts[2], body);
+          return sendJson(res, 200, { annotation });
+        }
+        if (req.method === 'PATCH' && parts[3] === 'annotations' && parts.length === 5) {
+          const body = await readJsonBody(req);
+          const annotation = store.updateAnnotation(parts[2], parts[4], body);
           return sendJson(res, 200, { annotation });
         }
       }

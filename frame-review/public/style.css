@@ -155,8 +155,43 @@ main {
   gap: 8px;
 }
 .note-box label { display: flex; align-items: center; gap: 8px; color: #9aa7b4; }
+.note-actions { display: flex; gap: 8px; }
+.note-actions button { padding: 4px 10px; font-size: 12px; }
 .note-box textarea { width: 100%; resize: vertical; }
 .hint { font-size: 12px; color: #7d8a97; }
+
+.anchor-panel {
+  background: #161b22;
+  border: 1px solid #2a313c;
+  border-radius: 8px;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.anchor-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.anchor-head h2 { font-size: 14px; margin: 0; }
+.anchor-target { font-size: 12px; color: #8b98a5; }
+.anchor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+@media (max-width: 700px) { .anchor-grid { grid-template-columns: 1fr; } }
+.anchor-card {
+  border: 1px solid #2f3945;
+  border-radius: 7px;
+  background: #10151c;
+  padding: 8px 10px;
+  font-size: 12px;
+  min-height: 74px;
+}
+.anchor-title { font-weight: 700; color: #9fd1ff; margin-bottom: 5px; }
+.anchor-body { color: #a9b6c3; line-height: 1.6; }
+.anchor-body .ok { color: #57d987; }
+.anchor-body .warn { color: #ffb84d; }
+.anchor-body .bad { color: #ff7b7b; }
+.anchor-body code { color: #ffd24d; }
+.anchor-compare { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.anchor-compare label { display: flex; align-items: center; gap: 6px; color: #9aa7b4; font-size: 12px; }
+.anchor-state { font-size: 12px; color: #8b98a5; }
+.anchor-candidates { margin-top: 5px; font-family: ui-monospace, monospace; font-size: 11px; color: #b48cff; }
 
 .side-col {
   background: #161b22;
@@ -184,6 +219,7 @@ main {
   background: #10151c;
 }
 .ann.current { border-color: #ffd24d; box-shadow: 0 0 0 1px #ffd24d33; }
+.ann.selected { border-color: #4db6ff; box-shadow: 0 0 0 1px #4db6ff55; }
 .ann.flash-hl { animation: hl 1s ease 2; }
 @keyframes hl { 50% { background: #2a2410; } }
 .ann-head { display: flex; gap: 8px; align-items: center; margin-bottom: 5px; }

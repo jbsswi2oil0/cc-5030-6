@@ -7,8 +7,11 @@
   "scripts": {
     "start": "node server/index.js",
     "gen-media": "node tools/generate-media.js",
+    "experiment": "node tools/experiment-anchors.js --write",
     "test": "playwright test --config=test/playwright.config.js",
-    "test:unit": "node test/unit.js"
+    "test:unit": "node test/unit.js",
+    "test:experiment": "node test/experiment.js",
+    "test:all": "node test/unit.js && node test/experiment.js && playwright test --config=test/playwright.config.js"
   },
   "dependencies": {
     "@ffprobe-installer/ffprobe": "^2.1.2",

@@ -13,7 +13,10 @@ const state = {
   sourceVersionId: null,
   drag: null,
   pollTimer: null,
-  pendingOpenId: null
+  pendingOpenId: null,
+  selectedAnnotationId: null,
+  editingId: null,
+  lastAnchorResult: null
 };
 
 function $(id) {
@@ -79,6 +82,9 @@ async function uploadFile(file) {
 
 async function openMedia(contentId, annotationId) {
   if (!contentId) return;
+  state.selectedAnnotationId = null;
+  cancelEdit();
+  renderAnchorState(null);
   setWait('正在加载媒体与精确帧表…');
   const { media } = await api('GET', `/api/media/${contentId}`);
   state.media = media;
@@ -108,6 +114,7 @@ async function openMedia(contentId, annotationId) {
   await refreshAnnotations(false);
   buildTrackOptions();
   renderMeta();
+  await loadAnchorTargets();
 
   const idx = new URLSearchParams(location.search).get('frame');
   const openId = annotationId || new URLSearchParams(location.search).get('annotation');
@@ -121,7 +128,13 @@ async function openMedia(contentId, annotationId) {
   await state.engine.seekToFrame(target);
   clearWait();
   startPolling();
-  if (openId) highlightAnnotation(openId);
+  if (openId) {
+    const opened = state.annotations.find((x) => x.annotationId === openId);
+    if (opened) selectAnnotation(opened);
+    highlightAnnotation(openId);
+  } else {
+    renderAnchorPanel(null);
+  }
 }
 
 /* Resolve a stored annotation to a frame index in THIS frame table.
@@ -230,7 +243,7 @@ function geometry() {
 const canvas = $('overlay');
 const ctx = canvas.getContext('2d');
 
-function resizeCanvas() {
+function syncOverlayBox() {
   const video = $('video');
   const dpr = window.devicePixelRatio || 1;
   // Match the video's layout box via its offset metrics. The video is
@@ -240,18 +253,31 @@ function resizeCanvas() {
   // assigned the video within the (positioned) stage.
   const cssW = video.offsetWidth;
   const cssH = video.offsetHeight;
-  canvas.width = Math.round(cssW * dpr);
-  canvas.height = Math.round(cssH * dpr);
-  canvas.style.width = cssW + 'px';
-  canvas.style.height = cssH + 'px';
-  canvas.style.left = video.offsetLeft + 'px';
-  canvas.style.top = video.offsetTop + 'px';
+  const bw = Math.round(cssW * dpr);
+  const bh = Math.round(cssH * dpr);
+  const left = video.offsetLeft + 'px';
+  const top = video.offsetTop + 'px';
+  if (canvas.width !== bw) canvas.width = bw;
+  if (canvas.height !== bh) canvas.height = bh;
+  if (canvas.style.width !== cssW + 'px') canvas.style.width = cssW + 'px';
+  if (canvas.style.height !== cssH + 'px') canvas.style.height = cssH + 'px';
+  if (canvas.style.left !== left) canvas.style.left = left;
+  if (canvas.style.top !== top) canvas.style.top = top;
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+
+function resizeCanvas() {
+  syncOverlayBox();
   drawOverlay();
 }
 
 function drawOverlay() {
   if (!state.engine) return;
+  // A flex reflow (e.g. meta text wrapping or font load) can move the video
+  // without changing its size, which a ResizeObserver on the video misses.
+  // Re-read the layout box on every draw so the overlay can never stay on a
+  // stale offset.
+  syncOverlayBox();
   const { rect, fit, rotation } = geometry();
   ctx.clearRect(0, 0, rect.width, rect.height);
 
@@ -334,11 +360,18 @@ async function createAnnotation(region) {
     flash('帧未确认，拒绝写入注释', true);
     return;
   }
+  // A region drag always creates a new annotation. Leaving an edit open would
+  // silently discard the edited text, so end editing first and say so.
+  if (state.editingId) {
+    cancelEdit();
+    flash('已退出编辑：画面框选始终创建新注释');
+  }
   const text = $('noteText').value.trim() || '技术注释（无文字）';
   setWait('写入注释（绑定内容身份/轨道/精确帧时间）…');
   try {
     const { annotation } = await api('POST', `/api/media/${state.media.contentId}/annotations`, {
       frameIndex: idx,
+      verifiedFrameIndex: state.engine.verifiedFrame,
       region,
       text,
       track: state.track,
@@ -348,6 +381,7 @@ async function createAnnotation(region) {
     state.annotations.push(annotation);
     $('noteText').value = '';
     renderAnnotationList();
+    selectAnnotation(annotation);
     flash(`已绑定到帧 ${idx}（pts ${annotation.ptsTime.toFixed(6)}）区域已换算为素材坐标`);
   } catch (err) {
     flash('注释保存失败：' + err.message, true);
@@ -392,9 +426,9 @@ function renderAnnotationList() {
 
   for (const a of visible) {
     const li = document.createElement('div');
-    li.className = 'ann' + (a.frameIndex === idx ? ' current' : '');
+    li.className = 'ann' + (a.frameIndex === idx ? ' current' : '')
+      + (a.annotationId === state.selectedAnnotationId ? ' selected' : '');
     li.dataset.id = a.annotationId;
-    const here = resolveAnnotationFrame(a);
     li.innerHTML = `
       <div class="ann-head">
         <span class="ann-frame">帧 ${a.frameIndex}</span>
@@ -406,18 +440,69 @@ function renderAnnotationList() {
         pts ${a.ptsTime.toFixed(6)} · 帧率 ${a.isCfr ? a.frameRate + 'fps' : 'VFR'}
         · 区域 (${a.region.xn.toFixed(3)},${a.region.yn.toFixed(3)} ${a.region.wn.toFixed(3)}×${a.region.hn.toFixed(3)})
       </div>
+      <div class="ann-anchors"></div>
       <div class="ann-version" title="来源版本">来源版本：${a.sourceVersionId}<br>来源文件：${a.sourceFileName}</div>
       <div class="ann-actions">
         <button class="locate">定位到此帧</button>
+        <button class="edit">编辑注释</button>
         <a class="share" target="_blank">跨端分享链接</a>
       </div>`;
     li.querySelector('.ann-text').textContent = a.text;
+    li.querySelector('.ann-anchors').innerHTML = anchorSummary(a);
     li.querySelector('.locate').addEventListener('click', () => locateAnnotation(a));
+    li.querySelector('.edit').addEventListener('click', () => startEdit(a));
     const url = `${location.origin}/?media=${encodeURIComponent(state.media.contentId)}&annotation=${encodeURIComponent(a.annotationId)}`;
     li.querySelector('.share').href = url;
     list.appendChild(li);
   }
   $('annCount').textContent = `${visible.length} 条注释`;
+}
+
+function anchorSummary(a) {
+  if (!a.anchors) return '<span class="bad">无锚点（旧注释）</span>';
+  const t = a.anchors.time;
+  const c = a.anchors.content;
+  const check = a.anchorCheck || {};
+  const timeCheck = check.time ? (check.time.reliable ? '写入自检可靠' : '写入自检不可靠') : '写入自检缺失';
+  return `<span class="ok">时间</span> pts ${t.ptsTime.toFixed(6)} · ${timeCheck}`
+    + ` · <span class="ok">签名</span> ${c.algorithm} 阈值 ${c.threshold}`;
+}
+
+function startEdit(a) {
+  state.editingId = a.annotationId;
+  $('noteText').value = a.text;
+  $('noteText').focus();
+  $('btnSaveEdit').hidden = false;
+  $('btnCancelEdit').hidden = false;
+  $('uploadForm').classList.add('editing');
+  flash(`正在编辑帧 ${a.frameIndex} 的注释；帧锚点保持不变`);
+}
+
+function cancelEdit() {
+  state.editingId = null;
+  $('noteText').value = '';
+  $('btnSaveEdit').hidden = true;
+  $('btnCancelEdit').hidden = true;
+}
+
+async function saveEdit() {
+  const id = state.editingId;
+  if (!id) return;
+  try {
+    const { annotation } = await api('PATCH', `/api/media/${state.media.contentId}/annotations/${id}`, {
+      text: $('noteText').value,
+      track: state.track,
+      author: state.author
+    });
+    const i = state.annotations.findIndex((x) => x.annotationId === id);
+    if (i >= 0) state.annotations[i] = annotation;
+    cancelEdit();
+    renderAnnotationList();
+    drawOverlay();
+    flash('注释已更新（帧与两种锚点未变）');
+  } catch (err) {
+    flash('注释更新失败：' + err.message, true);
+  }
 }
 
 async function locateAnnotation(a) {
@@ -439,7 +524,124 @@ function highlightAnnotation(id) {
   }
 }
 
-/* ---------------- polling (two-user collaboration) ---------------- */
+/* ---------------- anchor comparison panel ---------------- */
+
+async function loadAnchorTargets() {
+  const { media } = await api('GET', '/api/media');
+  const sel = $('anchorTargetSelect');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for (const m of media) {
+    const opt = document.createElement('option');
+    opt.value = m.contentId;
+    const latest = m.versions[m.versions.length - 1];
+    opt.textContent = `${latest.fileName} · ${m.frameTable.frameCount}帧 · ${m.contentId.slice(0, 8)}…`;
+    sel.appendChild(opt);
+  }
+  if (sel.querySelector(`option[value="${prev}"]`)) sel.value = prev;
+  else if (state.media) sel.value = state.media.contentId;
+}
+
+function selectAnnotation(a) {
+  state.selectedAnnotationId = a.annotationId;
+  renderAnchorPanel(a);
+  renderAnnotationList();
+}
+
+function renderAnchorPanel(a) {
+  $('btnCompare').disabled = !a;
+  $('anchorTarget').textContent = a
+    ? `注释 ${a.annotationId.slice(0, 6)} · 来源帧 ${a.frameIndex} · 轨道 ${a.track}`
+    : '未选择注释';
+  if (!a) {
+    $('timeAnchorCard').querySelector('.anchor-body').textContent = '选择一条注释后显示定位结果';
+    $('contentAnchorCard').querySelector('.anchor-body').textContent = '选择一条注释后显示定位结果';
+    return;
+  }
+  if (!a.anchors) {
+    const legacy = '<span class="bad">旧注释没有锚点；无法用两种定位器复算，需重新标注。</span>';
+    $('timeAnchorCard').querySelector('.anchor-body').innerHTML = legacy;
+    $('contentAnchorCard').querySelector('.anchor-body').innerHTML = legacy;
+    return;
+  }
+  const check = a.anchorCheck;
+  const t = check && check.time;
+  const c = check && check.content;
+  const statusText = c
+    ? ({ resolved: '唯一', ambiguous: '歧义', 'not-found': '无候选' }[c.status] || c.status)
+    : '';
+  $('timeAnchorCard').querySelector('.anchor-body').innerHTML = t
+    ? `<div>帧内区间 ${a.anchors.time.intervalSec.toFixed(6)}s · 时基 <code>${a.anchors.time.timeBase}</code></div>
+       <div>写入自检：<span class="${t.reliable ? 'ok' : 'bad'}">${t.reliable ? 'PTS 精确命中' : '不可靠'}</span>（${t.method}）</div>
+       <div>时间轴指纹一致：${t.timelinePreserved ? '<span class="ok">是</span>' : '<span class="bad">否</span>'}</div>`
+    : '<span class="bad">缺少写入自检结果</span>';
+  $('contentAnchorCard').querySelector('.anchor-body').innerHTML = c
+    ? `<div>算法 <code>${a.anchors.content.algorithm}</code> · 阈值 <code>${a.anchors.content.threshold}</code></div>
+       <div>写入自检：候选 ${c.candidateCount} 个 · 状态 <span class="${c.status === 'resolved' ? 'ok' : 'warn'}">${statusText}</span></div>
+       <div class="anchor-candidates">${c.candidates.map((x) => `帧${x.frameIndex} d=${x.distance.toFixed(3)}`).join(' · ') || '无候选'}</div>`
+    : '<span class="bad">缺少写入自检结果</span>';
+  renderAnchorState(null);
+}
+
+function renderAnchorState(result, error) {
+  const el = $('anchorCompareState');
+  if (error) {
+    el.innerHTML = `<span class="bad">定位失败：${error}</span>`;
+    return;
+  }
+  if (!result) {
+    el.textContent = '尚未对目标素材重新定位';
+    return;
+  }
+  const t = result.result && result.result.time;
+  const c = result.result && result.result.content;
+  if (!t || !c) {
+    el.innerHTML = `<span class="bad">${result.error || '目标缺少锚点结果'}</span>`;
+    return;
+  }
+  const timeText = t.reliable
+    ? `<span class="ok">可靠</span> 帧 ${t.frameIndex}`
+    : `<span class="bad">不可靠</span> 最近帧 ${t.frameIndex}（${t.method}）`;
+  const contentText = c.status === 'resolved'
+    ? `<span class="ok">唯一</span> 帧 ${c.frameIndex}（${c.candidateCount} 候选）`
+    : c.status === 'ambiguous'
+      ? `<span class="warn">歧义 ${c.ambiguity} 个候选</span>（首候选帧 ${c.frameIndex}）`
+      : `<span class="bad">无候选</span>`;
+  el.innerHTML = `时间锚点：${timeText} ｜ 签名锚点：${contentText}`;
+}
+
+async function compareAnchors() {
+  const a = state.annotations.find((x) => x.annotationId === state.selectedAnnotationId);
+  if (!a) {
+    flash('请先在注释列表中选择一条注释', true);
+    return;
+  }
+  const target = $('anchorTargetSelect').value;
+  if (!target) return;
+  $('anchorCompareState').textContent = '重新定位中…';
+  try {
+    const r = await api('GET', `/api/media/${state.media.contentId}/annotations/${a.annotationId}?target=${encodeURIComponent(target)}`);
+    state.lastAnchorResult = r;
+    renderAnchorState(r);
+    const t = r.result && r.result.time;
+    // Only a reliable time hit is allowed to move the review canvas. An
+    // unreliable hit (cut/re-timed target) names a frame too, but seeking to
+    // it would present the wrong picture as if it were the annotation.
+    if (t && t.reliable) {
+      setWait('按时间锚点结果定位到目标帧…');
+      await state.engine.seekToFrame(t.frameIndex);
+      clearWait();
+      flash(`已按可靠时间锚点定位到帧 ${t.frameIndex}；签名结果见锚点面板`);
+    } else if (t) {
+      flash('时间锚点不可靠，未移动审阅画面；请查看锚点面板中的候选帧', true);
+    } else {
+      flash('锚点结果缺少时间定位，未移动审阅画面', true);
+    }
+  } catch (err) {
+    renderAnchorState(null, err.message);
+    flash('锚点对照失败：' + err.message, true);
+  }
+}
 
 async function refreshAnnotations(redraw = true) {
   if (!state.media) return;
@@ -494,6 +696,16 @@ function bindEvents() {
     const v = $('video');
     if (v.paused) v.play(); else v.pause();
   });
+  $('btnSaveEdit').addEventListener('click', saveEdit);
+  $('btnCancelEdit').addEventListener('click', cancelEdit);
+  $('btnCompare').addEventListener('click', compareAnchors);
+  $('annotationList').addEventListener('click', (e) => {
+    if (e.target.closest('button, a')) return;
+    const card = e.target.closest('.ann');
+    if (!card) return;
+    const a = state.annotations.find((x) => x.annotationId === card.dataset.id);
+    if (a) selectAnnotation(a);
+  });
   $('video').addEventListener('timeupdate', () => {
     if (state.engine && !state.engine.isWaiting) renderFrameInfo();
   });
@@ -524,6 +736,7 @@ async function init() {
     $('mediaSelect').value = preselect;
     await openMedia(preselect, params.get('annotation'));
   }
+  await loadAnchorTargets();
   resizeCanvas();
 }
 
